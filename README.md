@@ -1,37 +1,31 @@
-# acelee-activiti
+# spring-boot-with-activiti
+整合工作流
+activiti version 5.22.0
+spring boot version 1.5.9.RELEASE
+mysql5.0+
+mybatis
 
-#### 介绍
-springboot/springcloud 整合activiti工作流和在线画图，帮助您快速搭建工作流的微服务。
+#文件中心
+1. 通过git下载activiti源码：https://github.com/Activiti/Activiti
+2. 切换分支到5.22
+    git checkout activiti-5.22.0
+3. 参考引用http://jmysql.com/activiti/126.html
+4. 作者博客地址： https://blog.csdn.net/las723
 
-#### 软件架构
-软件架构说明
+#相关接口
+1.首页 http://localhost
+2.我发起的记录 http://localhost/history/process/mys?userId=c00776c0-186c-11e9-b046-e58aa127f5e6
+3.我待办的记录 http://localhost/runtime/tasks/ing?userId=bee0dbc0-1956-11e9-bde4-5516b71b463e
+4.我操作的记录 http://localhost/history/tasks/myc?userId=bee0dbc0-1956-11e9-bde4-5516b71b463e
 
+#使用说明
+1.将源码down到本地，用idea或eclipse打开，会初始化maven依赖，直到成功
+2.新建数据库，更改src/main/resources/application.yml对应配置信息
+3.初始化src/main/resources/db-init.sql表结构，自己新加几条数据做测试用
+4.启动ActivitiApplication.java
+5.访问首页即可，
 
-#### 安装教程
-
-1. xxxx
-2. xxxx
-3. xxxx
-
-#### 使用说明
-
-1. xxxx
-2. xxxx
-3. xxxx
-
-#### 参与贡献
-
-1. Fork 本仓库
-2. 新建 Feat_xxx 分支
-3. 提交代码
-4. 新建 Pull Request
-
-
-#### 码云特技
-
-1. 使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2. 码云官方博客 [blog.gitee.com](https://blog.gitee.com)
-3. 你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解码云上的优秀开源项目
-4. [GVP](https://gitee.com/gvp) 全称是码云最有价值开源项目，是码云综合评定出的优秀开源项目
-5. 码云官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6. 码云封面人物是一档用来展示码云会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+#注意事项
+1.因业务需要使用自己环境的用户权限；
+2.配置流程图时，流程名称须填、流程key必须唯一
+    流程开始节点id必须配置为S00000，当然你也可以根据代码修改
