@@ -1,11 +1,11 @@
-# spring-boot-with-activiti
+#### spring-boot-with-activiti
 整合工作流
 activiti version 5.22.0
 spring boot version 1.5.9.RELEASE
 mysql5.0+
 mybatis
 
-#文件中心
+#### 文件中心
 
 1. 通过git下载activiti源码：https://github.com/Activiti/Activiti
 2. 切换分支到5.22
@@ -13,7 +13,7 @@ mybatis
 3. 参考引用http://jmysql.com/activiti/126.html
 4. 作者博客地址： https://blog.csdn.net/las723
 
-#相关接口
+#### 相关接口
 
 1.首页 http://localhost
 
@@ -23,7 +23,7 @@ mybatis
 
 4.我操作的记录 http://localhost/history/tasks/myc?userId=bee0dbc0-1956-11e9-bde4-5516b71b463e
 
-#使用说明
+#### 使用说明
 
 1.将源码down到本地，用idea或eclipse打开，会初始化maven依赖，直到成功
 
@@ -35,7 +35,7 @@ mybatis
 
 5.访问首页即可，
 
-#注意事项
+#### 注意事项
 
 1.因业务需要使用自己环境的用户权限；
 
@@ -44,7 +44,7 @@ mybatis
     
 3.有疑问的同学可在博客下方留言
 
-#代码结构
+#### 代码结构
 
 1.src/main/java
 
@@ -84,7 +84,9 @@ mybatis
 
 文档在根目录下面，里面很详细的介绍了各个接口对应的信息，以及如何配置流程的详细介绍，参考“ACTIVITI工作流接口文档.docx”
 
---------------------- 
+
+#### 使用参考
+--------------------------------------------------------- 
 作者：艾斯-李 
 来源：CSDN 
 原文：https://blog.csdn.net/las723/article/details/88417152 
