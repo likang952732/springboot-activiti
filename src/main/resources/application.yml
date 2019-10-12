@@ -12,6 +12,7 @@ spring:
   thymeleaf:
     mode: LEGACYHTML5
     cache: false
+    prefix: classpath:/templates
 
 #mybatis config
 mybatis:
