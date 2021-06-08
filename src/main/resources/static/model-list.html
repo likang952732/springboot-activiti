@@ -9,7 +9,7 @@
 </div>
 <h2>模型列表</h2>
 <hr>
-<a href="javascript: AJAX.POST('/models/newModel')">绘制模型</a>
+<a href="javascript: AJAX.GET('/model/newModel')">绘制模型</a>
 <table border="1" id="model-list">
     <tr>
         <td>模型编号</td>
@@ -18,7 +18,7 @@
         <td>创建时间</td>
         <td>操作</td>
     </tr>
-    <script id="models" type="text/html">
+    <script id="model" type="text/html">
         <tr>
             <td>模型编号</td>
             <td>模型名称</td>
@@ -34,8 +34,8 @@
             <td>{{$value.createTime}}</td>
             <td>
                 <a href="/editor?modelId={{$value.id}}">编辑</a>
-             <a href="javascript: AJAX.DELETE('/models/{{$value.id}}')">删除</a>
-             <a href="javascript: AJAX.POST('/models/{{$value.id}}/deployment')">发布</a>
+             <a href="javascript: AJAX.DELETE('/model/{{$value.id}}')">删除</a>
+             <a href="javascript: AJAX.POST('/model/{{$value.id}}/deployment')">发布</a>
             </td>
         </tr>
         {{/each}}
@@ -191,9 +191,9 @@
 
 <script>
 $(function() {
-    AJAX.GET("/models", null
+    AJAX.GET("/model", null
             , function (result) {
-                var html = template("models", result);
+                var html = template("model", result);
                 $("#model-list").html(html);
             });
 

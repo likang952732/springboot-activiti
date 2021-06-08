@@ -106,6 +106,7 @@ public class ProcessController {
      */
     @GetMapping("")
     public Result<List<Map<String,Object>>> list() {
+        log.info("process 获取所有流程");
         List<Map<String,Object>> list = processInfoService.process();
         return new Result<>(list);
     }

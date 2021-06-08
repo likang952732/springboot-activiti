@@ -12,18 +12,15 @@ import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.editor.language.json.converter.BpmnJsonConverter;
+import org.activiti.engine.ActivitiException;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.Model;
-import org.activiti.engine.repository.ProcessDefinition;
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +31,7 @@ import java.util.Map;
  * @date: 2019/3/7 20:14
  */
 @RestController
-@RequestMapping("models")
+@RequestMapping("/model")
 public class ModelerController implements RestServiceController<Model, String>{
 
     @Autowired
@@ -49,8 +46,8 @@ public class ModelerController implements RestServiceController<Model, String>{
      * @return
      * @throws UnsupportedEncodingException
      */
-    @PostMapping("newModel")
-    public Object newModel() throws UnsupportedEncodingException {
+    @GetMapping("/newModel")
+    public String newModel() throws UnsupportedEncodingException {
         //初始化一个空模型
         Model model = repositoryService.newModel();
 
@@ -81,7 +78,40 @@ public class ModelerController implements RestServiceController<Model, String>{
                 "http://b3mn.org/stencilset/bpmn2.0#");
         editorNode.put("stencilset", stencilSetNode);
         repositoryService.addModelEditorSource(id,editorNode.toString().getBytes("utf-8"));
-        return ToWeb.buildResult().redirectUrl("/editor?modelId="+id);
+        //return ToWeb.buildResult().redirectUrl("/editor?modelId="+id);
+        return id;
+    }
+
+    /**
+     * 获取流程定义json数据
+     *
+     * @param modelId
+     * @return
+     */
+    @GetMapping(value = "/{modelId}/json")
+    public ObjectNode getEditorJson(@PathVariable String modelId) {
+        ObjectNode modelNode = null;
+
+        Model model = repositoryService.getModel(modelId);
+
+        if (model != null) {
+            try {
+                if (StringUtils.isNotEmpty(model.getMetaInfo())) {
+                    modelNode = (ObjectNode) objectMapper.readTree(model.getMetaInfo());
+                } else {
+                    modelNode = objectMapper.createObjectNode();
+                    modelNode.put("name", model.getName());
+                }
+                modelNode.put("id", model.getId());
+                byte[] modelEditorSource = repositoryService.getModelEditorSource(model.getId());
+                ObjectNode editorJsonNode = (ObjectNode) objectMapper.readTree(new String(modelEditorSource, StandardCharsets.UTF_8));
+                modelNode.putPOJO("model", editorJsonNode);
+
+            } catch (Exception e) {
+                throw new ActivitiException("Error creating model JSON", e);
+            }
+        }
+        return modelNode;
     }
 
 

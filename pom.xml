@@ -93,6 +93,19 @@
 			<version>1.16.14</version>
 		</dependency>
 
+		<dependency>
+			<groupId>cn.hutool</groupId>
+			<artifactId>hutool-all</artifactId>
+			<version>5.3.6</version>
+		</dependency>
+
+		<!--devtools热部署-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>true</scope>
+		</dependency>
+
     </dependencies>
 
 	<build>
@@ -100,6 +113,9 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<fork>true</fork>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.mybatis.generator</groupId>

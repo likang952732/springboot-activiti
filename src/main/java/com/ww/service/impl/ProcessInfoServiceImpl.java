@@ -1,5 +1,7 @@
 package com.ww.service.impl;
 
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.ww.dao.ProcessMapper;
 import com.ww.service.ProcessInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +24,13 @@ public class ProcessInfoServiceImpl implements ProcessInfoService {
 
     @Override
     public List<Map<String, Object>> models() {
-        return processMapper.selectModels();
+        List<Map<String, Object>> list = processMapper.selectModels();
+        for (Map<String, Object> map: list) {
+            JSONObject json = JSONUtil.parseObj(map.get("META_INFO_"));
+            map.put("name",json.getStr("name"));
+            map.put("revision",json.getStr("revision"));
+        }
+        return list;
     }
 
     @Override
