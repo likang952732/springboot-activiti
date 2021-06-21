@@ -1,10 +1,15 @@
 package com.ww.activiti.vo;
 
+import lombok.Data;
 import org.activiti.engine.task.Task;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
+@Data
 public class RuTask {
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
     private String id;
 
     private Integer rev;
@@ -31,7 +36,7 @@ public class RuTask {
 
     private Integer priority;
 
-    private Date createTime;
+    private String createTime;
 
     private Date dueDate;
 
@@ -46,6 +51,10 @@ public class RuTask {
     private Date claimTime;
     
     private String bussinesskey;
+
+    private Object startActId;
+
+    private Object endActId;
 
     public RuTask(Task task) {
         setId(task.getId());
@@ -62,14 +71,14 @@ public class RuTask {
         setOwner(task.getOwner());
         setTaskDefKey(task.getTaskDefinitionKey());
         setDelegation("");
-        setCreateTime(task.getCreateTime());
+        setCreateTime(sdf.format(task.getCreateTime()));
         setDueDate(task.getDueDate());
         setPriority(task.getPriority());
 
     }
 
 
-    public String getBussinesskey() {
+   /* public String getBussinesskey() {
 		return bussinesskey;
 	}
 
@@ -235,5 +244,5 @@ public class RuTask {
 
     public void setClaimTime(Date claimTime) {
         this.claimTime = claimTime;
-    }
+    }*/
 }

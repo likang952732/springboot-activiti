@@ -1,7 +1,9 @@
 package com.ww.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.ww.dao.HistoryMapper;
 import com.ww.dao.RuntimeMapper;
+import com.ww.model.ApproveReason;
 import com.ww.service.RuntimeInfoService;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.engine.RepositoryService;
@@ -58,17 +60,17 @@ public class RuntimInfoServiceImpl implements RuntimeInfoService {
         //判断是否结束
         Map<String,Object> endEvent = historyMapper.selectEndEventByTaskId(taskId);
         log.info("查询hi_taskinst结束事件的结果，{}",endEvent);
-        List<Map<String,Object>> hiTask=historyMapper.selectHiTaskByTaskId(taskId);
-        String ruExcutionId=(String) hiTask.get(0).get("EXECUTION_ID_");
-        String _processId=(String) hiTask.get(0).get("PROC_INST_ID_");
-
+        List<Map<String,Object>> hiTask = historyMapper.selectHiTaskByTaskId(taskId);
+        String ruExcutionId = (String) hiTask.get(0).get("EXECUTION_ID_");
+        String _processId = (String) hiTask.get(0).get("PROC_INST_ID_");
         //2.运行表
         //判断是驳回到原点：运行表ru_task，act_ru_identitylink，ru_variable，ru_execution清除节点信息
-        if ("S00000".equals(rejectElemKey)){
+        //if ("S00000".equals(rejectElemKey)){
+        if (StrUtil.isNotBlank(rejectElemKey)){
             if (null==endEvent || endEvent.isEmpty()){
                 //删variables
-                res = runtimeMapper.deleteRuVariable(taskId);
-                log.info("删ru_variables结束，{}",res);
+              /*  res = runtimeMapper.deleteRuVariable(taskId);
+                log.info("删ru_variables结束，{}",res);*/
 
                 //删除当前的任务
                 //不能删除当前正在执行的任务，所以要先清除掉关联
@@ -86,7 +88,6 @@ public class RuntimInfoServiceImpl implements RuntimeInfoService {
                 //删identitylink
                 res = runtimeMapper.deleteRuIdentity(taskId);
                 log.info("删ru_identitylink结束，{}",res);
-
             }else {
                 //结束了，act_hi_actinst删掉结束event
                 res = historyMapper.deleteHiEndEvent(taskId);
@@ -168,6 +169,12 @@ public class RuntimInfoServiceImpl implements RuntimeInfoService {
     }
 
 
+    @Override
+    public int saveApproveReason(ApproveReason approveReason) {
+        return runtimeMapper.saveApproveReason(approveReason);
+    }
+
+
     /**
      *  根据ActivityId 查询出来想要活动Activity
      * @param id
@@ -219,10 +226,7 @@ public class RuntimInfoServiceImpl implements RuntimeInfoService {
                 execution.executeActivity(findActivity);
                 return execution;
             }
-
         });
         log.info("自由跳转至节点：{}-----完成",targetActId);
     }
-
-
 }

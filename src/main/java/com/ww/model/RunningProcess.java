@@ -30,4 +30,9 @@ public class RunningProcess implements Serializable{
      * 当前节点
      */
     private String activityId;
+
+    /**
+     * 流程发布id
+     */
+    private String deploymentId;
 }

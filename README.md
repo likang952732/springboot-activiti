@@ -91,3 +91,10 @@ mybatis
 来源：CSDN 
 原文：https://blog.csdn.net/las723/article/details/88417152 
 版权声明：本文为博主原创文章，转载请附上博文链接！
+
+
+
+## 说明
+1在线画流程图
+2发布模型(模型发布后 act_re_model表中的 发布id字段会设置一个值)
+3.启动流程(act_re_procdef表中的ID_为流程定义id值, 启动流程后act_ru_task表中会新增一条数据, 流程启动接口返回的data值对应该表中的PROC_INST_ID字段)

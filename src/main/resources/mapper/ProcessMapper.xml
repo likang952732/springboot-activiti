@@ -10,4 +10,23 @@
     select * from act_re_procdef
   </select>
 
+  <select id="getStartList" resultType="java.util.Map">
+    select
+      arm.*,
+      arp.ID_ AS "proDefId"
+    from act_re_model arm
+    join act_re_procdef arp on arm.DEPLOYMENT_ID_ = arp.DEPLOYMENT_ID_
+  </select>
+
+
+  <select id="getActId" resultType="java.util.Map">
+    select
+    PROC_INST_ID_,START_ACT_ID_, END_ACT_ID_
+    from act_hi_procinst where PROC_INST_ID_ IN
+    <foreach collection="instIdList" item="id" index="index" open="(" close=")" separator=",">
+      #{id}
+    </foreach>
+  </select>
+
+
 </mapper>

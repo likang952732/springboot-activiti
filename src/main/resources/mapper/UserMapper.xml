@@ -3,24 +3,21 @@
 <mapper namespace="com.ww.dao.UserDao">
     <resultMap id="BaseResultMap" type="com.ww.model.User">
         <id column="uid" property="id" jdbcType="INTEGER"/>
-        <result column="username" property="username" jdbcType="VARCHAR"/>
+        <result column="userName" property="userName" jdbcType="VARCHAR"/>
         <result column="password" property="password" jdbcType="VARCHAR"/>
-        <result column="tel" property="tel" jdbcType="VARCHAR"/>
-        <result column="age" property="age" javaType="INTEGER"/>
+        <result column="userType" property="userType" jdbcType="INTEGER"/>
     </resultMap>
 
     <resultMap id="UserInfoResultMap" type="com.ww.model.UserInfo">
         <id column="uid" property="id" jdbcType="INTEGER"/>
         <result column="username" property="username" jdbcType="VARCHAR"/>
         <result column="password" property="password" jdbcType="VARCHAR"/>
-        <result column="tel" property="tel" jdbcType="VARCHAR"/>
-        <result column="age" property="age" javaType="INTEGER"/>
         <result column="rolename" property="rolename" jdbcType="VARCHAR"/>
         <result column="permissionname" property="permissionName" jdbcType="VARCHAR"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-      uid,username,password,tel,age
+      userName,password,userType
     </sql>
     <sql id="Permission_Column_List">
         p.pid,p.permissionname
@@ -30,12 +27,12 @@
     </sql>
 
     <select id="login" parameterType="com.ww.model.User" resultMap="BaseResultMap">
-        SELECT <include refid="Base_Column_List"/> FROM USER
-        WHERE username = #{username,jdbcType=VARCHAR}
+        SELECT <include refid="Base_Column_List"/> FROM t_user
+        WHERE userName = #{user.userName,jdbcType=VARCHAR}
     </select>
 
     <select id="getPermission" parameterType="INTEGER" resultType="com.ww.model.Permisssion">
-        SELECT <include refid="Permission_Column_List"/> FROM USER u
+        SELECT <include refid="Permission_Column_List"/> FROM t_user u
         LEFT JOIN USER_ROLE ur ON u.uid = ur.userid
         LEFT JOIN ROLE r ON ur.roleid = r.rid
         LEFT JOIN ROLE_PERMISSION rp ON r.rid = rp.roleid
@@ -44,7 +41,7 @@
     </select>
 
     <select id="getUserInfoList" resultMap="UserInfoResultMap">
-        SELECT <include refid="UserInfo_Column_List"/> FROM USER u
+        SELECT <include refid="UserInfo_Column_List"/> FROM t_user u
         LEFT JOIN USER_ROLE ur ON u.uid = ur.userid
         LEFT JOIN ROLE r ON ur.roleid = r.rid
         LEFT JOIN ROLE_PERMISSION rp ON r.rid = rp.roleid

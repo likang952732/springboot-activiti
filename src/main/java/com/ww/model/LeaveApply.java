@@ -53,4 +53,6 @@ public class LeaveApply {
      */
     int userJobId;
     Task task;
+
+    String proDefId;
 }

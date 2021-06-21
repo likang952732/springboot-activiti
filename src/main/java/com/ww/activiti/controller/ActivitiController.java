@@ -82,6 +82,8 @@ public class ActivitiController implements RestServiceController<ProcessDefiniti
         return null;
     }
 
+
+    @GetMapping("/delete/{id}")
     @Override
     public Object deleteOne(@PathVariable("id")String id) {
         //根据deploymentID删除定义的流程，普通删除

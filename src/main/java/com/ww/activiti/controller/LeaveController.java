@@ -111,9 +111,10 @@ public class LeaveController {
             user = new User();
             user.setId(1);
         }
-        Map<String,Object> variables=new HashMap<String, Object>();
+        Map<String,Object> variables = new HashMap<String, Object>();
         variables.put("applyuserid", String.valueOf(user.getId()));
-        ProcessInstance ins=leaveService.startWorkflow(apply, user.getId(), variables);
+        variables.put("proDefId",apply.getProDefId());
+        ProcessInstance ins = leaveService.startWorkflow(apply, user.getId(), variables);
         logger.info("流程id{}已经启动",ins.getId());
         return "sucess";
     }
@@ -158,25 +159,33 @@ public class LeaveController {
         DataGrid<LeaveTask> grid = getLeaveTaskDataGrid(current, rowCount);
         return getLeaveTaskResponseData(request, grid,LeaveController.TLPERMISSION,LeaveController.TLROLE);//填写表单信息
     }
+
     @PostMapping(value="/getPLTaskList")
     public DataGrid<LeaveTask> getPLTaskList(HttpServletRequest request, @RequestParam("current") int current, @RequestParam("rowCount") int rowCount){
         DataGrid<LeaveTask> grid = getLeaveTaskDataGrid(current, rowCount);
         return getLeaveTaskResponseData(request, grid,LeaveController.PLPERMISSION,LeaveController.PLROLE);
     }
+
     @PostMapping(value="/getHRTaskList")
     public DataGrid<LeaveTask> getHRTaskList(HttpServletRequest request, @RequestParam("current") int current, @RequestParam("rowCount") int rowCount){
         DataGrid<LeaveTask> grid = getLeaveTaskDataGrid(current, rowCount);
         return getLeaveTaskResponseData(request, grid,LeaveController.HRPERMISSION,LeaveController.HRROLE);
     }
+
     private DataGrid<LeaveTask> getLeaveTaskResponseData(HttpServletRequest request, DataGrid<LeaveTask> grid, String perm, String role) {
         User user = (User)request.getSession().getAttribute("user");
-        List<Permisssion> permissions = userService.getPermission(user.getId());
+        if(user == null){
+            user = new User();
+            user.setId(1);
+        }
+       /* List<Permisssion> permissions = userService.getPermission(user.getId());
         boolean flag = false;
         for(Permisssion permission:permissions){
             if(perm.equalsIgnoreCase(permission.getPermissionName())){
                 flag = true;
             }
-        }
+        }*/
+        boolean flag = true;
         if(flag == false){
             return grid;
         }else{
@@ -312,7 +321,7 @@ public class LeaveController {
                 continue;
             }
             LeaveApply leaveApply = leaveService.getleave(Integer.valueOf(p.getBusinessKey()));
-            if(user.getId() != leaveApply.getUserId()){
+            if(leaveApply == null || user.getId() != leaveApply.getUserId()){
                 continue;
             }
             RunningProcess process = new RunningProcess();
@@ -320,6 +329,7 @@ public class LeaveController {
             process.setProcessInstanceId(p.getProcessInstanceId());
             process.setBusinessKey(p.getBusinessKey());
             process.setActivityId(p.getActivityId());
+            process.setDeploymentId(p.getDeploymentId());
             list.add(process);
         }
         grid.setTotal(list.size());

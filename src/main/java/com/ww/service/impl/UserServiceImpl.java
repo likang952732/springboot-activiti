@@ -1,11 +1,13 @@
 package com.ww.service.impl;
 
+import cn.hutool.crypto.digest.MD5;
 import com.ww.dao.UserDao;
 import com.ww.model.Permisssion;
 import com.ww.model.User;
 import com.ww.model.UserInfo;
 import com.ww.service.UserService;
 import org.springframework.stereotype.Service;
+import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -44,6 +46,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public User login(User user) {
+        user.setPassword(DigestUtils.md5DigestAsHex(user.getPassword().getBytes()));
         return userDao.login(user);
     }
 

@@ -13,4 +13,9 @@ public interface ProcessInfoService {
 
     List<Map<String, Object>> process();
 
+    List<Map<String, Object>> getStartList();
+
+
+    List<Map<String, Object>> getActId(List<String> instIdList);
+
 }

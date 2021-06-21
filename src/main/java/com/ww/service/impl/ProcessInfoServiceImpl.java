@@ -38,4 +38,21 @@ public class ProcessInfoServiceImpl implements ProcessInfoService {
         return processMapper.selectProcess();
     }
 
+    @Override
+    public List<Map<String, Object>> getStartList() {
+        List<Map<String, Object>> list = processMapper.getStartList();
+        for (Map<String, Object> map: list) {
+            JSONObject json = JSONUtil.parseObj(map.get("META_INFO_"));
+            map.put("name",json.getStr("name"));
+            map.put("revision",json.getStr("revision"));
+        }
+        return list;
+    }
+
+
+    @Override
+    public List<Map<String, Object>> getActId(List<String> instIdList) {
+        return processMapper.getActId(instIdList);
+    }
+
 }

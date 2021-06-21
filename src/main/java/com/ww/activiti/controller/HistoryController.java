@@ -1,5 +1,6 @@
 package com.ww.activiti.controller;
 
+import com.ww.model.HistoryTask;
 import com.ww.service.HistoryInfoService;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.history.HistoricVariableInstance;
@@ -37,11 +38,30 @@ public class HistoryController {
      */
     @GetMapping(value = "/tasks/myc")
     public Object myTasksCompleted(@RequestParam("userId") String userId) {
-        List<Map<String, Object>> list = new ArrayList<>();
-        List<Map<String, Object>> hiTasks = historyInfoService.myTasksCompleted(userId);
+        List<HistoryTask> list = new ArrayList<>();
+        List<HistoryTask> hiTasks = historyInfoService.myTasksCompleted(userId);
         setVariables(list, hiTasks);
         return list;
     }
+
+
+    @GetMapping(value = "/test")
+    public Object test(@RequestParam("userId") String userId) {
+        List<HistoryTask> list = new ArrayList<>();
+        List<Map<String, Object>> hiTasks = historyInfoService.test(userId);
+        for (Map<String, Object> map : hiTasks) {
+            String TEXT_ = map.get("TEXT_").toString();
+            System.out.println(TEXT_);
+           if("lk".equals(TEXT_)){
+               System.out.println("true");
+           }
+        }
+        //setVariables(list, hiTasks);
+        return list;
+    }
+
+
+
 
     /**
      * 我发起的记录
@@ -51,21 +71,21 @@ public class HistoryController {
      */
     @GetMapping(value = "/process/mys")
     public Object myProcessStarted(@RequestParam("userId") String userId) {
-        List<Map<String, Object>> list = new ArrayList<>();
-        List<Map<String, Object>> hiPros = historyInfoService.myProcessStarted(userId);
+        List<HistoryTask> list = new ArrayList<>();
+        List<HistoryTask> hiPros = historyInfoService.myProcessStarted(userId);
         setVariables(list, hiPros);
         return list;
     }
 
-    private void setVariables(List<Map<String, Object>> listNew, List<Map<String, Object>> listOld) {
+    private void setVariables(List<HistoryTask> listNew, List<HistoryTask> listOld) {
         if (!CollectionUtils.isEmpty(listOld)) {
-            for (Map<String, Object> hipro : listOld) {
+            for (HistoryTask hipro : listOld) {
                 List<HistoricVariableInstance> variables = historyService.createHistoricVariableInstanceQuery().
-                        processInstanceId((String) hipro.get("PROC_INST_ID_")).list();
+                        processInstanceId(hipro.getProcInstId()).list();
                 if (!CollectionUtils.isEmpty(variables)) {
-                    for (HistoricVariableInstance variable : variables) {
+                   /* for (HistoricVariableInstance variable : variables) {
                         hipro.put(variable.getVariableName(), variable.getValue());
-                    }
+                    }*/
                 }
                 listNew.add(hipro);
             }

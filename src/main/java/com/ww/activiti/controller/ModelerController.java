@@ -179,6 +179,18 @@ public class ModelerController implements RestServiceController<Model, String>{
         return new Result<>(list);
     }
 
+
+    /**
+     * 获取已启动的流程
+     * @return
+     */
+    @GetMapping("/start/models")
+    public Result<List<Map<String,Object>>> getStartList() {
+        List<Map<String,Object>> list = processInfoService.getStartList();
+        return new Result<>(list);
+    }
+
+
     @Override
     public Object getOne(@PathVariable("id") String id) {
         Model model = repositoryService.createModelQuery().modelId(id).singleResult();
@@ -200,6 +212,7 @@ public class ModelerController implements RestServiceController<Model, String>{
         );
     }
 
+    @GetMapping("/delete/{id}")
     public Object deleteOne(@PathVariable("id")String id){
         repositoryService.deleteModel(id);
         return ToWeb.buildResult().refresh();

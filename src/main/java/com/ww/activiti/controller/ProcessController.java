@@ -12,6 +12,7 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import sun.misc.BASE64Encoder;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -46,9 +47,9 @@ public class ProcessController {
      * @date: 2019/3/5 15:24
      */
     @GetMapping("show")
-    public void show(@RequestParam("did")String did, @RequestParam("ext")String ext, HttpServletResponse httpServletResponse) throws IOException {
+    public String show(@RequestParam("did")String did, @RequestParam("ext")String ext, HttpServletResponse httpServletResponse) throws IOException {
         if (StringUtils.isEmpty(did) || StringUtils.isEmpty(ext)){
-            return;
+            return "";
         }
         InputStream in = null;
         ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().deploymentId(did).singleResult();
@@ -57,7 +58,18 @@ public class ProcessController {
         }else if (".bpmn".equalsIgnoreCase(ext)){
             in = repositoryService.getResourceAsStream(did, processDefinition.getResourceName());
         }
-        OutputStream out = null;
+        byte[] data = null;
+        try {
+            data = new byte[in.available()];
+            in.read(data);
+            in.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // 加密
+        BASE64Encoder encoder = new BASE64Encoder();
+        return encoder.encode(data);
+       /* OutputStream out = null;
         byte[] buf = new byte[1024];
         int legth = 0;
         try {
@@ -72,7 +84,7 @@ public class ProcessController {
             if (out != null) {
                 out.close();
             }
-        }
+        }*/
     }
 
     /**
@@ -104,7 +116,7 @@ public class ProcessController {
      * @auther: Ace Lee
      * @date: 2019/3/7 16:27
      */
-    @GetMapping("")
+    @GetMapping("/list")
     public Result<List<Map<String,Object>>> list() {
         log.info("process 获取所有流程");
         List<Map<String,Object>> list = processInfoService.process();

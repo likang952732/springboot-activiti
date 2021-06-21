@@ -1,6 +1,7 @@
 package com.ww.service.impl;
 
 import com.ww.dao.HistoryMapper;
+import com.ww.model.HistoryTask;
 import com.ww.service.HistoryInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,12 +21,17 @@ public class HistoryInfoServiceImpl implements HistoryInfoService {
     private HistoryMapper historyMapper;
 
     @Override
-    public List<Map<String, Object>> myTasksCompleted(String userId) {
+    public List<HistoryTask> myTasksCompleted(String userId) {
         return historyMapper.selectMyTasksCompleted(userId);
     }
 
     @Override
-    public List<Map<String, Object>> myProcessStarted(String userId) {
+    public List<HistoryTask> myProcessStarted(String userId) {
         return historyMapper.selectMyProcessStarted(userId);
+    }
+
+    @Override
+    public List<Map<String, Object>> test(String userId) {
+        return historyMapper.getVarinstList();
     }
 }

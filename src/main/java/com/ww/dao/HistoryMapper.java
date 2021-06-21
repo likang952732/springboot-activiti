@@ -1,6 +1,8 @@
 package com.ww.dao;
 
+import com.ww.model.HistoryTask;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -8,9 +10,9 @@ import java.util.Map;
 @Mapper
 public interface HistoryMapper {
 
-    List<Map<String, Object>> selectMyTasksCompleted(String userId);
+    List<HistoryTask> selectMyTasksCompleted(@Param("userId") String userId);
 
-    List<Map<String, Object>> selectMyProcessStarted(String userId);
+    List<HistoryTask> selectMyProcessStarted(String userId);
 
     Map<String, Object> selectEndEventByTaskId(String taskId);
 
@@ -23,4 +25,6 @@ public interface HistoryMapper {
     List<Map<String, Object>> selectHiVariablesByProInsId(String proInsId);
 
     Map<String, Object> selectIdentitylinkByTaskId(String taskId);
+
+    List<Map<String, Object>> getVarinstList();
 }

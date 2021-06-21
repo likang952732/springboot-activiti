@@ -17,9 +17,11 @@ public class User implements Serializable{
 
     private int id;
 
-    private String username;
+    private String userName;
 
     private String password;
+
+    private Integer userType;
 
     private String tel;
 

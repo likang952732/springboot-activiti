@@ -96,4 +96,9 @@
           #{taskId,jdbcType=VARCHAR})
     </insert>
 
+    <insert id="saveApproveReason">
+         insert into t_approve_reason (PROC_INST_ID_, username, approve_reason)
+        values(#{approveReason.procInstId,jdbcType=VARCHAR},  #{approveReason.username,jdbcType=VARCHAR},   #{approveReason.approveReason,jdbcType=VARCHAR})
+    </insert>
+
 </mapper>

@@ -1,5 +1,6 @@
 package com.ww.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.ww.dao.LeaveDao;
 import com.ww.model.LeaveApply;
 import com.ww.service.LeaveService;
@@ -50,11 +51,10 @@ public class LeaveServiceImpl implements LeaveService {
         apply.setApplyTime(new Date().toString());
         apply.setUserId(userid);
         leaveDao.save(apply);
-        String businesskey=String.valueOf(apply.getId());//使用leaveapply表的主键作为businesskey,连接业务数据和流程数据
+        String businesskey = String.valueOf(apply.getId());//使用leaveapply表的主键作为businesskey,连接业务数据和流程数据
         identityService.setAuthenticatedUserId(String.valueOf(userid));
         //ProcessInstance instance=runtimeService.startProcessInstanceByKey("myProcess",businesskey,variables);
         ProcessInstance instance = runtimeService.startProcessInstanceByKey("process",businesskey,variables);
-        System.out.println(businesskey);
         String instanceid = instance.getId();
         apply.setProcessInstanceId(instanceid);
         leaveDao.update(apply);
@@ -71,14 +71,24 @@ public class LeaveServiceImpl implements LeaveService {
     @Override
     public List<LeaveApply> getApproveTaskList(String type,String userid) {
         List<LeaveApply> results = new ArrayList<>();
-        List<Task> tasks = taskService.createTaskQuery().taskCandidateGroup(type).list();
+        String userName = "bob";
+      /*  List<Task> tasks = taskService.createTaskQuery().taskCandidateGroup(type).list();
+        System.out.println("type: " + type);*/
+       List<Task> tasks = taskService.createTaskQuery().taskCandidateUser(userName)
+                .orderByTaskCreateTime().desc().list();
+        //List<Task> tasks = taskService.createTaskQuery().list();
         for(Task task:tasks){
             String instanceId = task.getProcessInstanceId();
             ProcessInstance ins = runtimeService.createProcessInstanceQuery().processInstanceId(instanceId).singleResult();
             String businesskey = ins.getBusinessKey();
+            if(StrUtil.isBlank(businesskey)){
+                continue;
+            }
             LeaveApply a = leaveDao.get(Integer.parseInt(businesskey));
-            a.setTask(task);
-            results.add(a);
+            if(a != null){
+                a.setTask(task);
+                results.add(a);
+            }
         }
         return results;
     }

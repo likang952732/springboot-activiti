@@ -1,5 +1,7 @@
 package com.ww.service;
 
+import com.ww.model.ApproveReason;
+
 import java.util.List;
 import java.util.Map;
 
@@ -12,4 +14,6 @@ public interface RuntimeInfoService {
     List<Map<String, Object>> myTasks(String userId);
 
     boolean rejected(String taskId, String rejectElemKey, String dealReason);
+
+    int saveApproveReason(ApproveReason approveReason);
 }

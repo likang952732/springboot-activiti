@@ -1,5 +1,7 @@
 package com.ww.service;
 
+import com.ww.model.HistoryTask;
+
 import java.util.List;
 import java.util.Map;
 
@@ -9,7 +11,9 @@ import java.util.Map;
  */
 public interface HistoryInfoService {
 
-    List<Map<String, Object>> myTasksCompleted(String userId);
+    List<HistoryTask> myTasksCompleted(String userId);
 
-    List<Map<String, Object>> myProcessStarted(String userId);
+    List<HistoryTask> myProcessStarted(String userId);
+
+    List<Map<String, Object>> test(String userId);
 }

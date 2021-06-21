@@ -1,13 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ww.dao.HistoryMapper">
+    <resultMap id="BaseMap" type="com.ww.model.HistoryTask">
+        <result property="id" column="ID_" />
+        <result property="name" column="NAME_" />
+        <result property="assignee" column="ASSIGNEE_" />
+        <result property="procInstId" column="PROC_INST_ID_" />
+        <result property="approveReason" column="approveReason" />
+        <result property="startTime" column="START_TIME_" />
+        <result property="endTime" column="END_TIME_" />
+    </resultMap>
 
-    <select id="selectMyTasksCompleted" resultType="java.util.Map">
-        select * from act_hi_taskinst where ID_ in
-        (select TASK_ID_ from act_hi_varinst where NAME_='dealUserId' and TEXT_= #{userId,jdbcType=VARCHAR})
+
+    <select id="selectMyTasksCompleted" resultMap="BaseMap">
+        select t.*, tar.approve_reason AS "approveReason"
+            from
+            (select * from act_hi_taskinst where ID_ in
+             (select TASK_ID_ from act_hi_varinst where NAME_='dealUserId'
+                and TEXT_= #{userId,jdbcType=VARCHAR}
+             )
+            )T
+           join t_approve_reason tar on T.PROC_INST_ID_ = tar.PROC_INST_ID_
+           and tar.username = #{userId,jdbcType=VARCHAR}
+           order by T.START_TIME_ DESC
     </select>
 
-    <select id="selectMyProcessStarted" resultType="java.util.Map">
+    <select id="getVarinstList" resultType="java.util.Map">
+	      SELECT
+					*
+				FROM
+					act_hi_varinst
+				WHERE
+					NAME_ = 'dealUserId'
+			 and  CREATE_TIME_ >= '2021-06-21'
+    </select>
+
+
+
+
+    <select id="selectMyProcessStarted" resultMap="BaseMap">
         select * from act_hi_procinst where PROC_INST_ID_ in
         (select PROC_INST_ID_ from act_hi_varinst where NAME_='startUserId' and TEXT_=#{userId,jdbcType=VARCHAR})
     </select>
