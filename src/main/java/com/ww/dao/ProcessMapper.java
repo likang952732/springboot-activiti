@@ -17,4 +17,10 @@ public interface ProcessMapper {
 
     List<Map<String, Object>> getActId(@Param("instIdList") List<String> instIdList);
 
+    int addAssList(@Param("map")Map<String, Object> map);
+
+    Map<String, Object> getAssList(@Param("procInsId")String procInsId);
+
+    Map<String, Object> getModel(@Param("proDefId")String proDefId);
+
 }

@@ -19,6 +19,15 @@
   </select>
 
 
+  <select id="getModel" resultType="java.util.Map">
+    select
+      arm.*,
+      arp.ID_ AS "proDefId"
+    from act_re_model arm
+    join act_re_procdef arp on arm.DEPLOYMENT_ID_ = arp.DEPLOYMENT_ID_
+    where arp.ID_ = #{proDefId}
+  </select>
+
   <select id="getActId" resultType="java.util.Map">
     select
     PROC_INST_ID_,START_ACT_ID_, END_ACT_ID_
@@ -27,6 +36,19 @@
       #{id}
     </foreach>
   </select>
+
+  <select id="getAssList" resultType="java.util.Map">
+     select * from t_ass where PROC_INST_ID_ = #{procInsId,jdbcType=VARCHAR}
+  </select>
+
+
+  <insert id="addAssList" parameterType="java.util.Map">
+     insert into t_ass(
+        PROC_INST_ID_,  ass,     timeAdd
+     )values (
+        #{map.procInstId},  #{map.ass},  now()
+     )
+  </insert>
 
 
 </mapper>

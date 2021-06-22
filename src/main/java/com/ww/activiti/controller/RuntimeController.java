@@ -2,27 +2,32 @@ package com.ww.activiti.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.ww.model.ApproveReason;
+import com.ww.service.ProcessInfoService;
 import com.ww.service.RuntimeInfoService;
 import lombok.extern.slf4j.Slf4j;
+import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.bpmn.model.FlowNode;
+import org.activiti.bpmn.model.SequenceFlow;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.RepositoryServiceImpl;
+import org.activiti.engine.impl.identity.Authentication;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
+import org.activiti.engine.impl.pvm.PvmActivity;
 import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.impl.pvm.process.ProcessDefinitionImpl;
 import org.activiti.engine.impl.pvm.process.TransitionImpl;
+import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
+import org.apache.avalon.framework.service.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 运行接口
@@ -40,19 +45,23 @@ public class RuntimeController {
 
     @Autowired
     private TaskService taskService;
+    @Autowired
+    private ProcessInfoService processInfoService;
+
 
 
     /**
      * 驳回到上一个节点
      */
-    @GetMapping("/reject/{taskId}")
-    public String reject(@PathVariable String taskId) {
+    @PostMapping("/reject/{taskId}")
+    public String reject(@PathVariable String taskId,@RequestBody Map<String, Object> params) {
+        String username = params.get("dealUserId").toString();  //当前用户名
         ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
+
         TaskService taskService = processEngine.getTaskService();
         HistoryService historyService = processEngine.getHistoryService();
         RuntimeService runtimeService = processEngine.getRuntimeService();
         RepositoryService repositoryService = processEngine.getRepositoryService();
-        //String taskId = "cca32273fdd1491b9061a4168f944a0c";   //这里根据你自己的taskid来写
         Map variables = new HashMap<>();
         //获取当前任务
         HistoricTaskInstance currTask = historyService.createHistoricTaskInstanceQuery()
@@ -66,8 +75,16 @@ public class RuntimeController {
         ProcessDefinitionEntity processDefinitionEntity = (ProcessDefinitionEntity) ((RepositoryServiceImpl) repositoryService)
                 .getDeployedProcessDefinition(currTask.getProcessDefinitionId());
         if (processDefinitionEntity == null) {
-            System.out.println("不存在的流程定义。");
+            log.error("不存在的流程定义。");
+            return "fail";
         }
+        Map<String, Object> assMap = processInfoService.getAssList(processInstance.getProcessInstanceId());
+        if(assMap == null){
+            log.error("未查询到审批人列表");
+            return "fail";
+        }
+        String assStr = assMap.get("ass").toString();
+        List<String> assList = Arrays.asList(assStr.split(","));
         //获取当前activity
         ActivityImpl currActivity = ((ProcessDefinitionImpl) processDefinitionEntity)
                 .findActivity(currTask.getTaskDefinitionKey());
@@ -82,20 +99,29 @@ public class RuntimeController {
         }
         pvmTransitionList.clear();
         //查找上一个user task节点
-        List<HistoricActivityInstance> historicActivityInstances = historyService
-                .createHistoricActivityInstanceQuery().activityType("userTask")
-                .processInstanceId(processInstance.getId())
-                .finished()
-                .orderByHistoricActivityInstanceEndTime().desc().list();
         TransitionImpl transitionImpl = null;
-        if (historicActivityInstances.size() > 0) {
-            ActivityImpl lastActivity = ((ProcessDefinitionImpl) processDefinitionEntity)
-                    .findActivity(historicActivityInstances.get(0).getActivityId());
-            //创建当前任务的新出口
-            transitionImpl = currActivity.createOutgoingTransition(lastActivity.getId());
-            transitionImpl.setDestination(lastActivity);
-        }else{
-            System.out.println("上级节点不存在。");
+        int index = assList.indexOf(username);
+        if(index != 0){
+            String prevusername = assList.get(index - 1);
+            List<HistoricActivityInstance> historicActivityInstances = historyService
+                    .createHistoricActivityInstanceQuery()
+                    .activityType("userTask")
+                    .processInstanceId(processInstance.getId())
+                     .taskAssignee(prevusername)   //上一审批人
+                    .finished()
+                    .orderByHistoricActivityInstanceEndTime().desc().list();
+            if (historicActivityInstances.size() > 0 ) {
+                log.info("上级节点存在........");
+                ActivityImpl lastActivity = ((ProcessDefinitionImpl) processDefinitionEntity)
+                        .findActivity(historicActivityInstances.get(0).getActivityId());
+                //创建当前任务的新出口
+                transitionImpl = currActivity.createOutgoingTransition(lastActivity.getId());
+                transitionImpl.setDestination(lastActivity);
+            }else{
+                log.info("上级节点不存在.......");
+            }
+        } else {
+            log.info("上级节点不存在.......");
         }
         variables = processInstance.getProcessVariables();
         // 完成任务
@@ -109,9 +135,10 @@ public class RuntimeController {
         // 恢复方向
         currActivity.getOutgoingTransitions().remove(transitionImpl);
         for (PvmTransition pvmTransition : originPvmTransitionList) {
+            log.info("恢复任务................");
             pvmTransitionList.add(pvmTransition);
         }
-        return "success";
+        return "ok";
     }
 
 
@@ -133,7 +160,7 @@ public class RuntimeController {
      * @return
      */
     @PostMapping(value = "tasks/do/{taskId}")
-    public Object tasks(@PathVariable String taskId, @RequestBody Map<String, Object> params ) {
+    public Object tasks(@PathVariable String taskId, @RequestBody Map<String, Object> params) {
         boolean taskDo = true;
         if (null==params || params.isEmpty()){
             taskService.complete(taskId);

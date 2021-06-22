@@ -55,4 +55,20 @@ public class ProcessInfoServiceImpl implements ProcessInfoService {
         return processMapper.getActId(instIdList);
     }
 
+
+    @Override
+    public int addAssList(Map<String, Object> map) {
+        return processMapper.addAssList(map);
+    }
+
+    @Override
+    public Map<String, Object> getAssList(String procInsId) {
+        return processMapper.getAssList(procInsId);
+    }
+
+    @Override
+    public Map<String, Object> getModel(String proDefId) {
+        return processMapper.getModel(proDefId);
+    }
+
 }

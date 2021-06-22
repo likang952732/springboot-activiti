@@ -18,4 +18,10 @@ public interface ProcessInfoService {
 
     List<Map<String, Object>> getActId(List<String> instIdList);
 
+    int addAssList(Map<String, Object> map);
+
+    Map<String, Object> getAssList(String procInsId);
+
+    Map<String, Object> getModel(String proDefId);
+
 }

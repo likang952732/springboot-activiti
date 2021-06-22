@@ -1,5 +1,9 @@
 package com.ww.activiti.controller;
 
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -16,13 +20,18 @@ import org.activiti.engine.ActivitiException;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.Model;
+import org.activiti.engine.repository.ProcessDefinition;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 模型管理
@@ -106,7 +115,6 @@ public class ModelerController implements RestServiceController<Model, String>{
                 byte[] modelEditorSource = repositoryService.getModelEditorSource(model.getId());
                 ObjectNode editorJsonNode = (ObjectNode) objectMapper.readTree(new String(modelEditorSource, StandardCharsets.UTF_8));
                 modelNode.putPOJO("model", editorJsonNode);
-
             } catch (Exception e) {
                 throw new ActivitiException("Error creating model JSON", e);
             }
@@ -123,18 +131,17 @@ public class ModelerController implements RestServiceController<Model, String>{
      */
     @PostMapping("{id}/deployment")
     public Object deploy(@PathVariable("id")String id) throws Exception {
-
         //获取模型
         Model modelData = repositoryService.getModel(id);
+        if(StrUtil.isNotBlank(modelData.getDeploymentId())) {
+            return "模型已发布";
+        }
         byte[] bytes = repositoryService.getModelEditorSource(modelData.getId());
-
         if (bytes == null) {
             return ToWeb.buildResult().status(Status.FAIL)
                     .msg("模型数据为空，请先设计流程并成功保存，再进行发布。");
         }
-
         JsonNode modelNode = new ObjectMapper().readTree(bytes);
-
         BpmnModel model = new BpmnJsonConverter().convertToBpmnModel(modelNode);
         if(model.getProcesses().size()==0){
             return ToWeb.buildResult().status(Status.FAIL)
@@ -150,8 +157,7 @@ public class ModelerController implements RestServiceController<Model, String>{
                 .deploy();
         modelData.setDeploymentId(deployment.getId());
         repositoryService.saveModel(modelData);
-
-        /*try {
+        try {
             //创建流程文件
             ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().deploymentId(deployment.getId()).singleResult();
             InputStream processDiagram = repositoryService.getProcessDiagram(processDefinition.getId());
@@ -161,8 +167,7 @@ public class ModelerController implements RestServiceController<Model, String>{
             FileUtils.copyInputStreamToFile(processBpmn,new File("D:/deployments/"+modelData.getName()+".bpmn"));
         } catch (IOException e) {
             e.printStackTrace();
-        }*/
-
+        }
         return ToWeb.buildResult().refresh();
     }
 
@@ -234,4 +239,24 @@ public class ModelerController implements RestServiceController<Model, String>{
     }
 
 
+    private List<String> getAsssList(ObjectNode editorJsonNode){
+        List<String> list = new ArrayList<>();
+        //JsonNode childShapes = editorJsonNode.get("childShapes");
+        JSONObject model = JSONUtil.parseObj(editorJsonNode.toString());
+        JSONArray childShapeArray = JSONUtil.parseArray(model.getStr("childShapes"));
+        JSONObject jsonObject = null, properties = null;
+        for (int i = 0; i < childShapeArray.size(); i++){
+            jsonObject = childShapeArray.getJSONObject(i);
+            properties = JSONUtil.parseObj(jsonObject.getStr("properties"));
+            if(StrUtil.isBlank(properties.getStr("usertaskassignment"))){
+                continue;
+            }
+            JSONObject usertaskassignment = JSONUtil.parseObj(properties.getStr("usertaskassignment"));
+            String assignmentStr = usertaskassignment.getStr("assignment");
+            JSONObject assignment = JSONUtil.parseObj(assignmentStr);
+            String assignee = assignment.getStr("assignee");
+            list.add(assignee);
+        }
+        return list;
+    }
 }

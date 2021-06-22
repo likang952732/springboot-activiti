@@ -1,10 +1,17 @@
 package com.ww.activiti.controller;
 
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ww.common.DataGrid;
 import com.ww.common.ResponseData;
 import com.ww.model.*;
 import com.ww.service.LeaveService;
+import com.ww.service.ProcessInfoService;
 import com.ww.service.UserService;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.bpmn.model.FlowNode;
@@ -12,6 +19,7 @@ import org.activiti.bpmn.model.SequenceFlow;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricProcessInstance;
+import org.activiti.engine.repository.Model;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.activiti.image.impl.DefaultProcessDiagramGenerator;
@@ -30,10 +38,8 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 /**
  * @ClassName LeaveController
@@ -67,6 +73,10 @@ public class LeaveController {
     RepositoryService repositoryService;
     @Autowired
     HistoryService historyService;
+    @Autowired
+    ProcessInfoService processInfoService;
+    @Autowired
+    ObjectMapper objectMapper;
 
     @RequestMapping(value="/activiti")
     public ModelAndView index(){
@@ -115,7 +125,25 @@ public class LeaveController {
         variables.put("applyuserid", String.valueOf(user.getId()));
         variables.put("proDefId",apply.getProDefId());
         ProcessInstance ins = leaveService.startWorkflow(apply, user.getId(), variables);
-        logger.info("流程id{}已经启动",ins.getId());
+        String insId = ins.getId();
+        logger.info("流程id{}已经启动",insId);
+        try {
+            Map<String, Object> modelMap = processInfoService.getModel(apply.getProDefId());
+            Model modelData = repositoryService.getModel(modelMap.get("ID_").toString());
+            byte[] modelEditorSource = repositoryService.getModelEditorSource(modelData.getId());
+            ObjectNode editorJsonNode = (ObjectNode) objectMapper.readTree(new String(modelEditorSource, StandardCharsets.UTF_8));
+            List<String> asssList = getAsssList(editorJsonNode);
+            StringJoiner sj = new StringJoiner(",", "", "");
+            for (String str: asssList) {
+                sj.add(str);
+            }
+            Map<String, Object> map = new HashMap<>();
+            map.put("procInstId", insId);
+            map.put("ass",sj.toString());
+            processInfoService.addAssList(map);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
         return "sucess";
     }
     /**
@@ -436,4 +464,25 @@ public class LeaveController {
         return ResponseData.success();
     }
 
+
+    private List<String> getAsssList(ObjectNode editorJsonNode){
+        List<String> list = new ArrayList<>();
+        //JsonNode childShapes = editorJsonNode.get("childShapes");
+        JSONObject model = JSONUtil.parseObj(editorJsonNode.toString());
+        JSONArray childShapeArray = JSONUtil.parseArray(model.getStr("childShapes"));
+        JSONObject jsonObject = null, properties = null;
+        for (int i = 0; i < childShapeArray.size(); i++){
+            jsonObject = childShapeArray.getJSONObject(i);
+            properties = JSONUtil.parseObj(jsonObject.getStr("properties"));
+            if(StrUtil.isBlank(properties.getStr("usertaskassignment"))){
+                continue;
+            }
+            JSONObject usertaskassignment = JSONUtil.parseObj(properties.getStr("usertaskassignment"));
+            String assignmentStr = usertaskassignment.getStr("assignment");
+            JSONObject assignment = JSONUtil.parseObj(assignmentStr);
+            String assignee = assignment.getStr("assignee");
+            list.add(assignee);
+        }
+        return list;
+    }
 }

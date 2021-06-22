@@ -13,16 +13,16 @@
 
 
     <select id="selectMyTasksCompleted" resultMap="BaseMap">
-        select t.*, tar.approve_reason AS "approveReason"
-            from
-            (select * from act_hi_taskinst where ID_ in
-             (select TASK_ID_ from act_hi_varinst where NAME_='dealUserId'
-                and TEXT_= #{userId,jdbcType=VARCHAR}
+        SELECT t.*, tar.approve_reason AS "approveReason"
+            FROM
+            (SELECT * from act_hi_taskinst WHERE ID_ IN
+             (SELECT TASK_ID_ FROM act_hi_varinst WHERE NAME_='dealUserId'
+                AND REPLACE(TEXT_,'\n','') = #{userId,jdbcType=VARCHAR}
              )
             )T
-           join t_approve_reason tar on T.PROC_INST_ID_ = tar.PROC_INST_ID_
-           and tar.username = #{userId,jdbcType=VARCHAR}
-           order by T.START_TIME_ DESC
+           JOIN t_approve_reason tar ON T.PROC_INST_ID_ = tar.PROC_INST_ID_
+           AND REPLACE(tar.username,'\n','') = #{userId,jdbcType=VARCHAR}
+           ORDER BY T.START_TIME_ DESC
     </select>
 
     <select id="getVarinstList" resultType="java.util.Map">
